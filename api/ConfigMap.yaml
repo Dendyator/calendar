@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: calendar-config
+data:
+  calendar_config.yaml: |-
+    server:
+      host: "0.0.0.0"
+      port: "8080"
+    grpc:
+      host: "0.0.0.0"
+      port: "50051"
+    database:
+      driver: "postgres"
+      dsn: "user=user password=password dbname=calendar host=db port=5432 sslmode=disable"
+    rabbitmq:
+      dsn: "amqp://guest:guest@rabbitmq:5672/"
+
+  scheduler_config.yaml: |-
+    database:
+      driver: "postgres"
+      dsn: "user=user password=password dbname=calendar host=db port=5432 sslmode=disable"
+    rabbitmq:
+      dsn: "amqp://guest:guest@rabbitmq:5672/"
+    scheduler:
+      interval: "5m"
+
+  sender_config.yaml: |-
+    rabbitmq:
+      dsn: "amqp://guest:guest@rabbitmq:5672/"

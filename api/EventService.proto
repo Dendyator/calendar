@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "./;pb";
+
+message Event {
+  string id = 1;
+  string title = 2;
+  string description = 3;
+  int64 start_time = 4;
+  int64 end_time = 5;
+  string user_id = 6;
+}
+
+message CreateEventRequest {
+  Event event = 1;
+}
+
+message CreateEventResponse {}
+
+message UpdateEventRequest {
+  string id = 1;
+  Event event = 2;
+}
+
+message UpdateEventResponse {}
+
+message DeleteEventRequest {
+  string id = 1;
+}
+
+message DeleteEventResponse {}
+
+message GetEventRequest {
+  string id = 1;
+}
+
+message GetEventResponse {
+  Event event = 1;
+}
+
+message ListEventsRequest {}
+
+message ListEventsResponse {
+  repeated Event events = 1;
+}
+
+message ListEventsByDayRequest {
+  int64 date = 1;
+}
+
+message ListEventsByDayResponse {
+  repeated Event events = 1;
+}
+
+message ListEventsByWeekRequest {
+  int64 start = 1;
+}
+
+message ListEventsByWeekResponse {
+  repeated Event events = 1;
+}
+
+message ListEventsByMonthRequest {
+  int64 start = 1;
+}
+
+message ListEventsByMonthResponse {
+  repeated Event events = 1;
+}
+
+service EventService {
+  rpc CreateEvent(CreateEventRequest) returns (CreateEventResponse);
+  rpc UpdateEvent(UpdateEventRequest) returns (UpdateEventResponse);
+  rpc DeleteEvent(DeleteEventRequest) returns (DeleteEventResponse);
+  rpc GetEvent(GetEventRequest) returns (GetEventResponse);
+  rpc ListEvents(ListEventsRequest) returns (ListEventsResponse);
+  rpc ListEventsByDay(ListEventsByDayRequest) returns (ListEventsByDayResponse);
+  rpc ListEventsByWeek(ListEventsByWeekRequest) returns (ListEventsByWeekResponse);
+  rpc ListEventsByMonth(ListEventsByMonthRequest) returns (ListEventsByMonthResponse);
+}

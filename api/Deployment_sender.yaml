@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calendar-sender
+  labels:
+    app: calendar-sender
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: calendar-sender
+  template:
+    metadata:
+      labels:
+        app: calendar-sender
+    spec:
+      containers:
+        - name: calendar-sender
+          image: ravenbobby/hw16:sender
+          env:
+            - name: CONFIG_FILE
+              value: "/app/configs/sender_config.yaml"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/configs
+      volumes:
+        - name: config-volume
+          configMap:
+            name: calendar-config

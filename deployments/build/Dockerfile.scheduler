@@ -1,0 +1,41 @@
+FROM golang:1.22 AS build
+
+RUN apt-get update && apt-get install -y \
+     gcc \
+     libc-dev \
+     git \
+     && rm -rf /var/lib/apt/lists/*
+
+ENV BIN_FILE=/opt/calendar/calendar-scheduler-app
+ENV CODE_DIR=/go/src/app/
+
+WORKDIR ${CODE_DIR}
+
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+
+COPY . ${CODE_DIR}
+
+ARG LDFLAGS
+RUN CGO_ENABLED=0 go build \
+        -ldflags "$LDFLAGS" \
+        -o ${BIN_FILE} cmd/calendar_scheduler/*
+
+FROM debian:latest
+
+RUN apt-get update && apt-get install -y \
+    curl \
+    netcat-openbsd \
+    && rm -rf /var/lib/apt/lists/*
+
+LABEL ORGANIZATION="OTUS Online Education"
+LABEL SERVICE="calendar-scheduler"
+LABEL MAINTAINERS="student@otus.ru"
+
+COPY --from=build /opt/calendar/calendar-scheduler-app /opt/calendar/calendar-scheduler-app
+
+ENV CONFIG_FILE=/app/configs/scheduler_config.yaml
+COPY configs/scheduler_config.yaml ${CONFIG_FILE}
+
+CMD ["sh", "-c", "until nc -z rabbitmq 5672; do echo 'Waiting for RabbitMQ...'; sleep 2; done; /opt/calendar/calendar-scheduler-app -config ${CONFIG_FILE}"]

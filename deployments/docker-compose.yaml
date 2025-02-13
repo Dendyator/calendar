@@ -1,0 +1,100 @@
+services:
+  calendar:
+    build:
+      context: ../
+      dockerfile: deployments/build/Dockerfile
+    container_name: calendar_service
+    command: sh -c "/opt/calendar/calendar-app -config /app/configs/calendar_config.yaml"
+    volumes:
+      - ../configs:/app/configs
+    ports:
+      - "8080:8080"
+      - "50051:50051"
+    environment:
+      - CONFIG_PATH=/app/configs/config.yaml
+      - DATABASE_URL=postgres://user:password@db:5432/calendar
+    networks:
+      - calendar_network
+    depends_on:
+      - scheduler_service
+
+  db:
+    image: postgres:14
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: calendar
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - calendar_network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U user -d calendar" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - calendar_network
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmqctl status" ]
+      interval: 5s
+      timeout: 5s
+      retries: 3
+
+  scheduler_service:
+    build:
+      context: ../
+      dockerfile: deployments/build/Dockerfile.scheduler
+    container_name: scheduler_service
+    volumes:
+      - ../configs:/app/configs
+    networks:
+      - calendar_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  sender_service:
+    build:
+      context: ../
+      dockerfile: deployments/build/Dockerfile.sender
+    container_name: sender_service
+    volumes:
+      - ../configs:/app/configs
+    networks:
+      - calendar_network
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  migrate:
+    build:
+      context: ../
+      dockerfile: deployments/build/Dockerfile
+    container_name: migrate_service
+    volumes:
+      - ../migrations:/app/migrations
+    entrypoint: [ "sh", "/app/run_migrations.sh" ]
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - calendar_network
+
+
+networks:
+  calendar_network:
+    driver: bridge
+    name: calendar_network
+
+volumes:
+  db_data:
+    driver: local

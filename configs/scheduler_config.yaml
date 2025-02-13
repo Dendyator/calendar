@@ -1,0 +1,12 @@
+database:
+  driver: "postgres"
+  dsn: "user=user password=password dbname=calendar host=db port=5432 sslmode=disable"
+
+logger:
+  level: "info"
+
+rabbitmq:
+  dsn: "amqp://guest:guest@rabbitmq:5672/"
+
+scheduler:
+  interval: "5m"

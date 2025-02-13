@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: calendar-scheduler
+  labels:
+    app: calendar-scheduler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: calendar-scheduler
+  template:
+    metadata:
+      labels:
+        app: calendar-scheduler
+    spec:
+      containers:
+        - name: calendar-scheduler
+          image: ravenbobby/hw16:scheduler
+          env:
+            - name: CONFIG_FILE
+              value: "/app/configs/scheduler_config.yaml"
+          volumeMounts:
+            - name: config-volume
+              mountPath: /app/configs
+      volumes:
+        - name: config-volume
+          configMap:
+            name: calendar-config

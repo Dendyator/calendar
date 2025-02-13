@@ -1,0 +1,8 @@
+logger:
+  level: "info"
+
+rabbitmq:
+  dsn: "amqp://guest:guest@rabbitmq:5672/"
+
+sender:
+
